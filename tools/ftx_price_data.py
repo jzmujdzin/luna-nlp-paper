@@ -18,9 +18,10 @@ class GetFTXPriceData:
         self, interval: str, date_start: str, date_stop: str, ticker: str = "LUNC/USD"
     ):
         self.interval, self.ticker = interval, ticker
-        self.timestamp_start, self.timestamp_end = self.get_timestamp_for_date(
-            date_start
-        ), self.get_timestamp_for_date(date_stop)
+        self.timestamp_start, self.timestamp_end = (
+            self.get_timestamp_for_date(date_start),
+            self.get_timestamp_for_date(date_stop),
+        )
 
     def get_candlestick_data(self) -> pd.DataFrame:
         """

@@ -2,6 +2,8 @@ import ijson
 import pandas as pd
 import logging
 from datetime import datetime
+from transformers import pipeline
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 logger = logging.getLogger("tipper")
 logger.setLevel(logging.INFO)
@@ -21,6 +23,10 @@ class TwitterDataHandler:
 
     def __init__(self, file_tuple, lang):
         self.file_tuple, self.lang = file_tuple, lang
+        self.bert_classifier, self.vader_classifier = (
+            pipeline("sentiment-analysis"),
+            SentimentIntensityAnalyzer(),
+        )
         self.twitter_df = pd.DataFrame()
         self.create_twitter_df()
 
@@ -39,6 +45,8 @@ class TwitterDataHandler:
         """
         Concatenates files, filters out unnecessary columns
         """
+        f_name = file.split("\\")[-1]
+        logger.info(f"""{datetime.now()} opening {f_name}""")
         with open(file, "r") as f:
             objects = ijson.items(f, "", multiple_values=True)
             self.twitter_df = self.twitter_df.append(
@@ -59,12 +67,28 @@ class TwitterDataHandler:
                 ),
                 ignore_index=True,
             )
+        f_name = file.split("\\")[-1]
+        logger.info(f"{datetime.now()} done with {f_name}")
 
     def add_sentiment_scores(self) -> None:
         """
         Adds sentiment scores for the df
         """
-        self.twitter_df["score"] = 1
+        self.twitter_df = (
+            self.twitter_df.assign(
+                bert_dict=lambda x: x["content"].apply(
+                    lambda tweet: self.bert_classifier(tweet)
+                ),
+                vader_dict=lambda x: x["content"].apply(
+                    lambda tweet: self.vader_classifier.polarity_scores(str(tweet))
+                ),
+            )
+        ).assign(
+            bert=lambda x: x["bert_dict"].apply(
+                lambda s: (s[0]["score"]) * (1 if (s[0]["label"]) == "POSITIVE" else -1)
+            ),
+            vader=lambda x: x["vader_dict"].apply(lambda s: s["compound"]),
+        )
 
     @staticmethod
     def get_columns_for_twitter_df() -> list:
@@ -85,8 +109,10 @@ class TwitterDataHandler:
 if __name__ == "__main__":
     df = TwitterDataHandler(
         (
-            r"/Users/jakubzmujdzin/Desktop/repo/luna-nlp-paper/luna-1.json",
-            r"/Users/jakubzmujdzin/Desktop/repo/luna-nlp-paper/luna-2.json",
+            r"E:\luna-nlp-paper\luna_01_08.json",
+            r"E:\luna-nlp-paper\luna_09_16.json",
+            r"E:\luna-nlp-paper\luna_17_24.json",
+            r"E:\luna-nlp-paper\luna_25_31.json",
         ),
         "en",
     ).twitter_df
