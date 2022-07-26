@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from datetime import datetime
 import math
+import pytz
 
 
 class GetFTXPriceData:
@@ -36,8 +37,17 @@ class GetFTXPriceData:
         )
         if self.get_api_calls_number() > 1:
             df = self.get_data_from_timestamps(df)
-        df["date_time"] = pd.to_datetime(df.startTime, utc=True)
-        return df.drop_duplicates()
+        df["date"] = pd.to_datetime(df.startTime, utc=True)
+        return df.drop_duplicates()[
+            (
+                df.date
+                >= datetime.fromtimestamp(self.timestamp_start, tz=pytz.timezone("UTC"))
+            )
+            & (
+                df.date
+                <= datetime.fromtimestamp(self.timestamp_end, tz=pytz.timezone("UTC"))
+            )
+        ]
 
     def get_data_from_timestamps(self, df) -> pd.DataFrame:
         """
@@ -115,11 +125,11 @@ class GetFTXPriceData:
                     "Unsupported interval. For days, your interval should be an int the range of 1 to 30."
                 )
         elif "h" in interval:
-            if int(num) in (1, 6):
+            if int(num) in (1, 4):
                 return int(num) * 3600
             else:
                 raise Exception(
-                    "Unsupported interval. For hours, your interval should be either 1hrs or 6hrs"
+                    "Unsupported interval. For hours, your interval should be either 1hrs or 4hrs"
                 )
         elif "m" in interval:
             if int(num) in (1, 5, 15):
@@ -141,4 +151,4 @@ class GetFTXPriceData:
 
 
 if __name__ == "__main__":
-    prices = GetFTXPriceData("15 m", "01/05/22", "31/05/22").get_candlestick_data()
+    prices = GetFTXPriceData("15 m", "01/05/22", "08/05/22").get_candlestick_data()

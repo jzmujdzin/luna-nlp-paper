@@ -21,7 +21,7 @@ class TwitterDataHandler:
         lang - language to filter (i.e. 'en' for english)
     """
 
-    def __init__(self, file_tuple, lang):
+    def __init__(self, file_tuple: tuple, lang: str = "en"):
         self.file_tuple, self.lang = file_tuple, lang
         self.bert_classifier, self.vader_classifier = (
             pipeline("sentiment-analysis"),
@@ -109,10 +109,11 @@ class TwitterDataHandler:
 if __name__ == "__main__":
     df = TwitterDataHandler(
         (
-            r"E:\luna-nlp-paper\luna_01_08.json",
-            r"E:\luna-nlp-paper\luna_09_16.json",
-            r"E:\luna-nlp-paper\luna_17_24.json",
-            r"E:\luna-nlp-paper\luna_25_31.json",
+            r"E:\luna-nlp-paper\luna_08_09.json",
+            r"E:\luna-nlp-paper\luna_16_17.json",
+            r"E:\luna-nlp-paper\luna_24_25.json",
+            r"E:\luna-nlp-paper\luna_31_01.json",
         ),
         "en",
     ).twitter_df
+    df.to_csv("luna_twitter_dataset_with_sentiment_2.csv")
