@@ -14,7 +14,7 @@ logger = logging.getLogger("tipper")
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-TWITTER_DATA_PATH = r"E:\luna-nlp-paper\tools\luna_twitter_dataset_with_sentiment.csv"
+TWITTER_DATA_PATH = r"E:\luna-nlp-paper\tools\luna_tweets_sentiment_all.csv"
 
 
 class PredictionCheck:
