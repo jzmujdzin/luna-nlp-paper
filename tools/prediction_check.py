@@ -293,16 +293,14 @@ if __name__ == "__main__":
     interval_list = ["5Min", "15Min", "1H", "4H"]
     lag_number = 6
     unwanted_ngrams = [
-        #    ['join', 'astroswap'], ['pair', 'condition'], ['discord', 'group'], ['binance', 'futures'],
-        #    ['credit', 'card'], ['point', 'nn'], ['bullish', 'strength'], ['bullish', 'trend'], ['scan', 'results'],
-        #    ['aqarchain', 'estate'], ['aqarchain', 'realestate'], ['tezos', 'realestate'], ['bitcoin', 'whale', 'alert'],
-        #    ['whale', 'alert', 'tx'], ['bitcoin', 'whalealer'], ['btc', 'whalealert'], ['aqarchain'], ['aqarchain_io'],
-        #    ['tokenization', 'decentralization', 'defi'], ['short', 'btc', 'trade'], ['long', 'btc', 'trade'],
-        #    ['bitgame', 'btc'], ['btc', 'bitfinex', 'gt'], ['bet', 'btc', 'via'], ['btc', 'altcoin', 'polygon'],
-        #    ['btceur', 'crypto'], ['btc', 'btcusd', 'btcgbp'], ['btcusd', 'btcgbp', 'btceur'], ['btc', 'via'],
-        #    ['block', 'reward'], ['latest', 'block'], ['earn', 'btc'], ['signal', 'bit'], ['start', 'trading', 'bitcoin'],
-        #    ['free', 'btc'], ['current', 'price'], ['btc', 'price'], ['earn', 'bitcoin'], ['enterntaining'], ['subscribe'],
-        #    ['whale', 'alert'], ['btc', 'whalealert'], ['he', 'scores', 'when'], ['giveaway', 'luck']
+        ["price", "target", "next"],
+        ["miss", "next", "move"],
+        ["dont", "miss", "next"],
+        ["cryptowhales", "saveluna", "luna"],
+        ["lunar", "flying", "luna"],
+        ["except", "btc", "eth", "beta"],
+        ["mention", "updated", "every"],
+        ["hotel", "del", "luna"],
     ]
     prediction_df = PredictionCheck(
         sentiment_change_threshold,
