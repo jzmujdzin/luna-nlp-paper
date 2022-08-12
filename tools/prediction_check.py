@@ -96,6 +96,9 @@ class PredictionCheck:
             "precision",
             "recall",
             "f1_score",
+            "false_ommision_rate",
+            "false_positive_rate",
+            "specificity"
         ]
 
     def get_confusion_matrix(self, interval, lag, df, score_column) -> dict:
@@ -141,7 +144,7 @@ class PredictionCheck:
         }
 
     def calc_conf_matrix_stats(self, interval, lag, df, score_column) -> list:
-        """Retrieve Accuracy, Precision, Recall and F1 Score"""
+        """Retrieve metrics for classification"""
         conf_matrix = self.get_confusion_matrix(interval, lag, df, score_column)
         return [
             self.calc_accuracy(conf_matrix),
@@ -150,6 +153,9 @@ class PredictionCheck:
             self.calc_f1_score(
                 self.calc_recall(conf_matrix), self.calc_precision(conf_matrix)
             ),
+            self.calc_false_ommision_rate(conf_matrix),
+            self.calc_false_positive_rate(conf_matrix),
+            self.calc_specificity(conf_matrix),
         ]
 
     @staticmethod
@@ -167,6 +173,18 @@ class PredictionCheck:
     @staticmethod
     def calc_f1_score(recall, precision) -> float:
         return (2 * recall * precision) / (recall + precision)
+
+    @staticmethod
+    def calc_false_ommision_rate(conf_matrix) -> float:
+        return conf_matrix["fn"] / (conf_matrix["fn"] + conf_matrix["tn"])
+
+    @staticmethod
+    def calc_false_positive_rate(conf_matrix) -> float:
+        return conf_matrix["fp"] / (conf_matrix["fp"] + conf_matrix["tn"])
+
+    @staticmethod
+    def calc_specificity(conf_matrix) -> float:
+        return conf_matrix["tn"] / (conf_matrix["tn"] + conf_matrix["fp"])
 
     @staticmethod
     def merge_dfs_with_shift(prices, twtr, shift, freq) -> pd.DataFrame:
@@ -287,7 +305,7 @@ class PredictionCheck:
 
 
 if __name__ == "__main__":
-    sentiment_change_threshold = 0.05
+    sentiment_change_threshold = 0.005
     start_date = "01/05/22"
     end_date = "31/05/22"
     interval_list = ["5Min", "15Min", "1H", "4H"]
@@ -309,5 +327,18 @@ if __name__ == "__main__":
         interval_list,
         lag_number,
         unwanted_ngrams,
-        filter_for_ngrams=False,
+        filter_for_ngrams=True,
     ).evaluation
+    prediction_df['threshold'] = sentiment_change_threshold
+    for threshold in np.linspace(0.01, 0.3, num=59):
+        new_df = PredictionCheck(
+            threshold,
+            start_date,
+            end_date,
+            interval_list,
+            lag_number,
+            unwanted_ngrams,
+            filter_for_ngrams=True,
+        ).evaluation
+        new_df['threshold'] = threshold
+        prediction_df = prediction_df.append(new_df)
