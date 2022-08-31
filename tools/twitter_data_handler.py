@@ -41,7 +41,7 @@ class TwitterDataHandler:
         self.add_sentiment_scores()
         self.twitter_df = self.twitter_df[self.twitter_df["lang"] == "en"]
 
-    def concat_files(self, file) -> None:
+    def concat_files(self, file: str) -> None:
         """
         Concatenates files, filters out unnecessary columns
         """

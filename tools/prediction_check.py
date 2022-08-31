@@ -47,7 +47,7 @@ class PredictionCheck:
         self.evaluation = self.merge_scores_for_methods()
 
     def calculate_interval_predictions(
-        self, interval, df, score_column
+        self, interval: str, df: pd.DataFrame, score_column: str
     ) -> pd.DataFrame:
         """Retrieve predictions for certain interval"""
         return self.get_adj_prices(interval).merge(
@@ -65,7 +65,7 @@ class PredictionCheck:
             ]
         )
 
-    def get_final_scores(self, df, score_column) -> pd.DataFrame:
+    def get_final_scores(self, df: pd.DataFrame, score_column: str) -> pd.DataFrame:
         """Retrieve final scores for both methods, shifts and intervals"""
         logger.info(f"Getting final scores for {score_column}")
         return pd.DataFrame(
@@ -101,7 +101,7 @@ class PredictionCheck:
             "specificity"
         ]
 
-    def get_confusion_matrix(self, interval, lag, df, score_column) -> dict:
+    def get_confusion_matrix(self, interval: str, lag: int, df: pd.DataFrame, score_column: str) -> dict:
         """Retrieve confusion matrix for certain prediction"""
         logger.info(
             f"{datetime.now()} Calculating confusion matrix for {score_column},"
@@ -143,7 +143,7 @@ class PredictionCheck:
             "tn": np.sum(df["tn"]),
         }
 
-    def calc_conf_matrix_stats(self, interval, lag, df, score_column) -> list:
+    def calc_conf_matrix_stats(self, interval: str, lag: int, df: pd.DataFrame, score_column: str) -> list:
         """Retrieve metrics for classification"""
         conf_matrix = self.get_confusion_matrix(interval, lag, df, score_column)
         return [
@@ -159,35 +159,35 @@ class PredictionCheck:
         ]
 
     @staticmethod
-    def calc_accuracy(conf_matrix) -> float:
+    def calc_accuracy(conf_matrix: dict) -> float:
         return (conf_matrix["tp"] + conf_matrix["tn"]) / sum(conf_matrix.values())
 
     @staticmethod
-    def calc_recall(conf_matrix) -> float:
+    def calc_recall(conf_matrix: dict) -> float:
         return conf_matrix["tp"] / (conf_matrix["fn"] + conf_matrix["tp"])
 
     @staticmethod
-    def calc_precision(conf_matrix) -> float:
+    def calc_precision(conf_matrix: dict) -> float:
         return conf_matrix["tp"] / (conf_matrix["fp"] + conf_matrix["tp"])
 
     @staticmethod
-    def calc_f1_score(recall, precision) -> float:
+    def calc_f1_score(recall: float, precision: float) -> float:
         return (2 * recall * precision) / (recall + precision)
 
     @staticmethod
-    def calc_false_ommision_rate(conf_matrix) -> float:
+    def calc_false_ommision_rate(conf_matrix: dict) -> float:
         return conf_matrix["fn"] / (conf_matrix["fn"] + conf_matrix["tn"])
 
     @staticmethod
-    def calc_false_positive_rate(conf_matrix) -> float:
+    def calc_false_positive_rate(conf_matrix: dict) -> float:
         return conf_matrix["fp"] / (conf_matrix["fp"] + conf_matrix["tn"])
 
     @staticmethod
-    def calc_specificity(conf_matrix) -> float:
+    def calc_specificity(conf_matrix: dict) -> float:
         return conf_matrix["tn"] / (conf_matrix["tn"] + conf_matrix["fp"])
 
     @staticmethod
-    def merge_dfs_with_shift(prices, twtr, shift, freq) -> pd.DataFrame:
+    def merge_dfs_with_shift(prices: pd.DataFrame, twtr: pd.DataFrame, shift: int, freq) -> pd.DataFrame:
         """Merge price and twitter DataFrames with certain shift"""
         return twtr.merge(
             prices.shift(shift, freq=freq),
@@ -197,7 +197,7 @@ class PredictionCheck:
         )
 
     @staticmethod
-    def interval_match(interval) -> str:
+    def interval_match(interval: str) -> str:
         """Match intervals (FTX and pandas use differently expressed intervals)"""
         return (
             re.findall(r"(\d+)(\w+?)", interval)[0][0]
@@ -205,7 +205,7 @@ class PredictionCheck:
             + re.findall(r"(\d+)(\w+?)", interval)[0][1].lower()
         )
 
-    def get_adj_prices(self, interval) -> pd.DataFrame:
+    def get_adj_prices(self, interval: str) -> pd.DataFrame:
         """Retrieve price data and whether the price went up"""
         return (
             GetFTXPriceData(
@@ -220,8 +220,8 @@ class PredictionCheck:
             .set_index("date")
         )
 
-    def get_adj_twitter_df(self, df, diff_col, interval) -> pd.DataFrame:
-        """Manipulate twitter data: aggregate tweets for interval, return prediction if they met threshold"""
+    def get_adj_twitter_df(self, df: pd.DataFrame, diff_col: str, interval: str) -> pd.DataFrame:
+        """Manipulate Twitter data: aggregate tweets for interval, return prediction if they met threshold"""
         df["date"] = pd.to_datetime(df["date"])
         df_twtr = df.groupby(pd.Grouper(key="date", freq=interval)).aggregate(np.mean)
         return (
@@ -241,11 +241,11 @@ class PredictionCheck:
         )
 
     @staticmethod
-    def check_for_ngrams(sentence, ngram) -> int:
+    def check_for_ngrams(sentence: str, ngram: list) -> int:
         """Check if row contains ngrams"""
         return 1 if all(sentence.split().__contains__(wrd) for wrd in ngram) else 0
 
-    def filter_df_for_ngrams(self, df, ngrams_list) -> pd.DataFrame:
+    def filter_df_for_ngrams(self, df: pd.DataFrame, ngrams_list: list) -> pd.DataFrame:
         """Discards all rows that contain ngrams"""
         logger.info(f"Discarding unwanted ngrams")
         df = self.word_list_to_str(df).assign(
@@ -261,7 +261,7 @@ class PredictionCheck:
         )
         return df[df["ngram_count"] == 0]
 
-    def cleanup_data(self, tweet_content) -> list:
+    def cleanup_data(self, tweet_content: str) -> list:
         """Lemmatize, remove links and punctuaction"""
         return [
             self.lemmatizer.lemmatize(word)
@@ -287,7 +287,7 @@ class PredictionCheck:
             ]
         ]
 
-    def word_list_to_str(self, df) -> pd.DataFrame:
+    def word_list_to_str(self, df: pd.DataFrame) -> pd.DataFrame:
         return (
             df.assign(
                 processed_content=lambda x: x.apply(

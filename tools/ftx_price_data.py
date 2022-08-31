@@ -49,7 +49,7 @@ class GetFTXPriceData:
             )
         ]
 
-    def get_data_from_timestamps(self, df) -> pd.DataFrame:
+    def get_data_from_timestamps(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Loops through timestamps list and returns df with all the price data
         """
@@ -96,7 +96,7 @@ class GetFTXPriceData:
             / (self.convert_interval() * 1500)
         )
 
-    def offset_timestamp(self, timestamp_start, times=0) -> int:
+    def offset_timestamp(self, timestamp_start: int, times=0) -> int:
         """
         Offsets timestamp for data retrieval
         """
@@ -143,7 +143,7 @@ class GetFTXPriceData:
                 "Unsupported interval. Try d for days, h for hours or m for minutes"
             )
 
-    def get_url_with_params(self, timestamp_start, timestamp_end) -> str:
+    def get_url_with_params(self, timestamp_start: int, timestamp_end: int) -> str:
         """
         Generates url for FTX api using starting and ending timestamp, interval and ticker
         """
