@@ -98,10 +98,12 @@ class PredictionCheck:
             "f1_score",
             "false_ommision_rate",
             "false_positive_rate",
-            "specificity"
+            "specificity",
         ]
 
-    def get_confusion_matrix(self, interval: str, lag: int, df: pd.DataFrame, score_column: str) -> dict:
+    def get_confusion_matrix(
+        self, interval: str, lag: int, df: pd.DataFrame, score_column: str
+    ) -> dict:
         """Retrieve confusion matrix for certain prediction"""
         logger.info(
             f"{datetime.now()} Calculating confusion matrix for {score_column},"
@@ -143,7 +145,9 @@ class PredictionCheck:
             "tn": np.sum(df["tn"]),
         }
 
-    def calc_conf_matrix_stats(self, interval: str, lag: int, df: pd.DataFrame, score_column: str) -> list:
+    def calc_conf_matrix_stats(
+        self, interval: str, lag: int, df: pd.DataFrame, score_column: str
+    ) -> list:
         """Retrieve metrics for classification"""
         conf_matrix = self.get_confusion_matrix(interval, lag, df, score_column)
         return [
@@ -187,7 +191,9 @@ class PredictionCheck:
         return conf_matrix["tn"] / (conf_matrix["tn"] + conf_matrix["fp"])
 
     @staticmethod
-    def merge_dfs_with_shift(prices: pd.DataFrame, twtr: pd.DataFrame, shift: int, freq) -> pd.DataFrame:
+    def merge_dfs_with_shift(
+        prices: pd.DataFrame, twtr: pd.DataFrame, shift: int, freq
+    ) -> pd.DataFrame:
         """Merge price and twitter DataFrames with certain shift"""
         return twtr.merge(
             prices.shift(shift, freq=freq),
@@ -220,13 +226,17 @@ class PredictionCheck:
             .set_index("date")
         )
 
-    def get_adj_twitter_df(self, df: pd.DataFrame, diff_col: str, interval: str) -> pd.DataFrame:
+    def get_adj_twitter_df(
+        self, df: pd.DataFrame, diff_col: str, interval: str
+    ) -> pd.DataFrame:
         """Manipulate Twitter data: aggregate tweets for interval, return prediction if they met threshold"""
         df["date"] = pd.to_datetime(df["date"])
         df_twtr = df.groupby(pd.Grouper(key="date", freq=interval)).aggregate(np.mean)
         return (
             (
-                df_twtr.assign(diff=df_twtr[diff_col] - df_twtr[diff_col].shift(1),)
+                df_twtr.assign(
+                    diff=df_twtr[diff_col] - df_twtr[diff_col].shift(1),
+                )
             ).assign(
                 meets_threshold=lambda x: x.apply(
                     lambda u: 1 if abs(u["diff"] / u[diff_col]) > self.threshold else 0,
@@ -329,7 +339,7 @@ if __name__ == "__main__":
         unwanted_ngrams,
         filter_for_ngrams=True,
     ).evaluation
-    prediction_df['threshold'] = sentiment_change_threshold
+    prediction_df["threshold"] = sentiment_change_threshold
     for threshold in np.linspace(0.01, 0.3, num=59):
         new_df = PredictionCheck(
             threshold,
@@ -340,5 +350,5 @@ if __name__ == "__main__":
             unwanted_ngrams,
             filter_for_ngrams=True,
         ).evaluation
-        new_df['threshold'] = threshold
+        new_df["threshold"] = threshold
         prediction_df = prediction_df.append(new_df)
